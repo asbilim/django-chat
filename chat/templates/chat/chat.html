@@ -20,7 +20,7 @@
                     </div>
                     <h2 class="font-bold text-gray-700 text-2xl">VOLDEMORT</h2>
                 </div>
-                <div class="chatbox__content h-[350px] overflow-auto flex items-center justify-start py-4 gap-4 flex-col w-full">
+                <div class="chatbox__content h-[350px] overflow-auto flex items-center justify-start py-4 gap-4 flex-col w-full" id="chatbox">
                     <!-- for the receiver -->
                     <div class="message-left w-full flex-row items-center justify-start px-2 my-2">
                         <div class="message-left__content m-w-[80px] w-2/5  m-h-[25px] p-2 bg-gray-300 rounded rounded-md font-normal leading-tighter text-zinc-700">
@@ -41,14 +41,44 @@
                 <div class="sendingbox bg-white px-2 py-6 flex items-center justify-center w-full min-h-[55px] my-2">
                     <div class="box flex flex-row item-center justify-start py-2 gap-6">
                         <textarea type="text" name="message" id="message" class="h-[35px] room-name italic text-xl px-2 w-4/5 font-normal focus:outline-none focus:ring-4 focus:ring-gray-200 rounded-md transition transition-all" placeholder="Type your message..." ></textarea>
-                        <a href="#" class="flex items-center justify-center text-2xl text-white transition transition-all bg-gray-500 text-white font-semibold rounded rounded-md focus:ring-4 focus:ring-gray-200"><span class="mx-4 font-bold text-white"><i class="fa-solid fa-arrow-right"></i></span> </a>
+                        <a href="#" id="send" class="flex items-center justify-center text-2xl text-white transition transition-all bg-gray-500 text-white font-semibold rounded rounded-md focus:ring-4 focus:ring-gray-200"><span class="mx-4 font-bold text-white"><i class="fa-solid fa-arrow-right"></i></span> </a>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 </body>
+<script src="{% static 'chat/js/jquery.js' %}"></script>
 <script>
-    document.getElementById("room-name").focus()
+    let message = document.getElementById('message').value;
+    document.getElementById("message").focus()
+    const websocket = new WebSocket("ws://localhost:8000/chat/55/")
+    const sender_message = (message)=>`
+    <div class="message-left w-full flex flex-row items-center justify-end px-2  relative">
+        <div class="message-left__content m-w-[80px] w-2/5  m-h-[25px] p-2 bg-blue-300 rounded rounded-md font-normal leading-tighter text-white font-bold">
+            <span class="text-bold text-gray-50 block">John</span>
+            ${message}
+        </div>
+        <span class="text-md italic font-bold text-gray-900 absolute -bottom-5 right-2">5min ago</span>
+    </div>
+    `
+    document.getElementById("send").addEventListener('click',()=>{
+        let data = JSON.stringify( {
+            "type":"json",
+            "user":"arnold",
+            "message":$("#message").val(),
+        })
+        websocket.send(data)
+        document.getElementById('message').value="";
+
+    })
+    websocket.onmessage = (e)=>{
+        data = JSON.parse(e.data);
+        $('#chatbox').append(
+            sender_message(data.tester)
+        )
+        console.log(data)
+    }
+
 </script>
 </html>
